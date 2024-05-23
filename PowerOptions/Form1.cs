@@ -42,7 +42,7 @@ namespace PowerOptions
                 Icon = GetTrayIcon(),
                 Visible = true
             };
-
+             
             notifyIcon1.MouseClick += NotifyIcon1_MouseClick;
             notifyIcon1.MouseDoubleClick += NotifyIcon1_MouseDoubleClick;
 
