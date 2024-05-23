@@ -46,5 +46,41 @@ namespace PowerOptions.Properties {
                 this["InvertIconColor"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsGameModeOn {
+            get {
+                return ((bool)(this["IsGameModeOn"]));
+            }
+            set {
+                this["IsGameModeOn"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string IdleGameMode {
+            get {
+                return ((string)(this["IdleGameMode"]));
+            }
+            set {
+                this["IdleGameMode"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string GameModeisWorking {
+            get {
+                return ((string)(this["GameModeisWorking"]));
+            }
+            set {
+                this["GameModeisWorking"] = value;
+            }
+        }
     }
 }

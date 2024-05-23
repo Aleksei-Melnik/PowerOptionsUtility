@@ -4,34 +4,61 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Configuration;
 
 namespace PowerOptions
 {
     public partial class Form1 : Form
     {
         private NotifyIcon notifyIcon1;
+        private MenuItem selectPowerPlanMenuItem;
+        private bool dblClickToOpen;
+        private bool invertIconColor;
 
         public Form1()
         {
             InitializeComponent();
+            LoadSettings();
             InitializeTrayIcon();
+        }
+
+        private void LoadSettings()
+        {
+            dblClickToOpen = Properties.Settings.Default.DblClick;
+            invertIconColor = Properties.Settings.Default.InvertIconColor;
+        }
+
+        private void SaveSettings()
+        {
+            Properties.Settings.Default.DblClick = dblClickToOpen;
+            Properties.Settings.Default.InvertIconColor = invertIconColor;
+            Properties.Settings.Default.Save();
         }
 
         private void InitializeTrayIcon()
         {
             notifyIcon1 = new NotifyIcon
             {
-                Icon = new Icon(Path.Combine(Application.StartupPath, "Resources", "iconBatteryWhite.ico")),
+                Icon = GetTrayIcon(),
                 Visible = true
             };
 
             notifyIcon1.MouseClick += NotifyIcon1_MouseClick;
+            notifyIcon1.MouseDoubleClick += NotifyIcon1_MouseDoubleClick;
 
             ContextMenu trayMenu = new ContextMenu();
             MenuItem settingsMenuItem = new MenuItem("Settings");
             trayMenu.MenuItems.Add(settingsMenuItem);
-            settingsMenuItem.MenuItems.Add("Double Click to open", SettingsDblClick_Click);
-            settingsMenuItem.MenuItems.Add("Invert Icon Color", SettingsInvertIcon_Click);
+            MenuItem dblClickMenuItem = new MenuItem("Double Click to open", SettingsDblClick_Click)
+            {
+                Checked = dblClickToOpen
+            };
+            settingsMenuItem.MenuItems.Add(dblClickMenuItem);
+            MenuItem invertIconMenuItem = new MenuItem("Invert Icon Color", SettingsInvertIcon_Click)
+            {
+                Checked = invertIconColor
+            };
+            settingsMenuItem.MenuItems.Add(invertIconMenuItem);
             MenuItem AddNewPowerPlan = new MenuItem("Add Power Plan");
             trayMenu.MenuItems.Add(AddNewPowerPlan);
             AddNewPowerPlan.MenuItems.Add("Balanced", AddBalanced_Click);
@@ -40,10 +67,17 @@ namespace PowerOptions
             AddNewPowerPlan.MenuItems.Add("Ultimate Performance", AddUltimatePerformance_Click);
             MenuItem SelectPowerPlan = new MenuItem("Select Power Plan");
             trayMenu.MenuItems.Add(SelectPowerPlan);
+            selectPowerPlanMenuItem = SelectPowerPlan;
             GetPowerPlans(SelectPowerPlan);
             trayMenu.MenuItems.Add("Exit", Exit_Click);
 
             notifyIcon1.ContextMenu = trayMenu;
+        }
+
+        private Icon GetTrayIcon()
+        {
+            string iconPath = invertIconColor ? "iconBatteryBlack.ico" : "iconBatteryWhite.ico";
+            return new Icon(Path.Combine(Application.StartupPath, "Resources", iconPath));
         }
 
         private void GetPowerPlans(MenuItem SelectPowerPlan)
@@ -177,6 +211,8 @@ namespace PowerOptions
                     MessageBox.Show("Error", "Can't Add new Power Plan. Make sure that the program starts with Admin rights", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
             }
+
+            GetPowerPlans(selectPowerPlanMenuItem);
         }
 
         private void AddBalanced_Click(object sender, EventArgs e)
@@ -205,12 +241,19 @@ namespace PowerOptions
 
         private void SettingsDblClick_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Not Ready yet");
+            MenuItem menuItem = (MenuItem)sender;
+            menuItem.Checked = !menuItem.Checked;
+            dblClickToOpen = menuItem.Checked;
+            SaveSettings();
         }
 
         private void SettingsInvertIcon_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Not Ready yet");
+            MenuItem menuItem = (MenuItem)sender;
+            menuItem.Checked = !menuItem.Checked;
+            invertIconColor = menuItem.Checked;
+            notifyIcon1.Icon = GetTrayIcon();
+            SaveSettings();
         }
 
         private void Exit_Click(object sender, EventArgs e)
@@ -228,7 +271,15 @@ namespace PowerOptions
 
         private void NotifyIcon1_MouseClick(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
+            if (e.Button == MouseButtons.Left && !dblClickToOpen)
+            {
+                OpenPowerOptions();
+            }
+        }
+
+        private void NotifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left && dblClickToOpen)
             {
                 OpenPowerOptions();
             }
